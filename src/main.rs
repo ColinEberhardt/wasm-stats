@@ -469,6 +469,12 @@ fn main() -> Result<()> {
 mod tests {
     use super::*;
 
+    fn convert_wat_to_stats(wat: &str) -> Result<Stats> {
+        let binary = wat::parse_str(wat)?;
+        let stats = get_stats(&binary[..])?;
+        Ok(stats)
+    }
+
     #[test]
     fn get_stats_funcs() -> Result<()> {
         let wat = r#"
@@ -479,10 +485,139 @@ mod tests {
             )
         )
         "#;
-        let binary = wat::parse_str(wat)?;
-        let stats = get_stats(&binary[..])?;
-        // TODO: test more of the stats
+        let stats = convert_wat_to_stats(wat)?;
+
         assert_eq!(stats.funcs, 2);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_instructions_total() -> Result<()> {
+        let wat = r#"
+        (module )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+        // TODO: test total instructions stat
+        assert_eq!(stats.instr.total, 0);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_instructions_proposals() -> Result<()> {
+        let wat = r#"
+        (module )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+        // TODO: test proposals stats
+        assert_eq!(stats.instr.proposals.atomics, 0);
+        assert_eq!(stats.instr.proposals.ref_types, 0);
+        assert_eq!(stats.instr.proposals.simd, 0);
+        assert_eq!(stats.instr.proposals.tail_calls, 0);
+        assert_eq!(stats.instr.proposals.bulk, 0);
+        assert_eq!(stats.instr.proposals.multi_value, 0);
+        assert_eq!(stats.instr.proposals.non_trapping_conv, 0);
+        assert_eq!(stats.instr.proposals.sign_extend, 0);
+        assert_eq!(stats.instr.proposals.mutable_externals, 0);
+        assert_eq!(stats.instr.proposals.bigint_externals, 0);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_instructions_categories() -> Result<()> {
+        let wat = r#"
+        (module )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+        // TODO: test categories stats
+        assert_eq!(stats.instr.categories.load_store, 0);
+        assert_eq!(stats.instr.categories.local_var, 0);
+        assert_eq!(stats.instr.categories.global_var, 0);
+        assert_eq!(stats.instr.categories.table, 0);
+        assert_eq!(stats.instr.categories.memory, 0);
+        assert_eq!(stats.instr.categories.control_flow, 0);
+        assert_eq!(stats.instr.categories.direct_calls, 0);
+        assert_eq!(stats.instr.categories.indirect_calls, 0);
+        assert_eq!(stats.instr.categories.constants, 0);
+        assert_eq!(stats.instr.categories.wait_notify, 0);
+        assert_eq!(stats.instr.categories.other, 0);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_size() -> Result<()> {
+        let wat = r#"
+        (module )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+        // TODO: test size stats
+        assert_eq!(stats.size.code, 0);
+        assert_eq!(stats.size.init, 0);
+        assert_eq!(stats.size.externals, 0);
+        assert_eq!(stats.size.types, 0);
+        assert_eq!(stats.size.custom, 0);
+        assert_eq!(stats.size.descriptors, 0);
+        assert_eq!(stats.size.total, 8);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_imports() -> Result<()> {
+        let wat = r#"
+        (module
+            (func (import "import" "func"))
+            (memory (import "import" "memory") 1)
+            (global (import "import" "global") i32)
+            (table (import "import" "table") 1 funcref)
+        )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+
+        assert_eq!(stats.imports.funcs, 1);
+        assert_eq!(stats.imports.memories, 1);
+        assert_eq!(stats.imports.globals, 1);
+        assert_eq!(stats.imports.tables, 1);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_exports() -> Result<()> {
+        let wat = r#"
+        (module
+            (func (export "export_func"))
+            (memory (export "export_memory") (data))
+            (global (export "export_global") i32)
+            (table (export "export_table") funcref (elem))
+        )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+
+        assert_eq!(stats.exports.funcs, 1);
+        assert_eq!(stats.exports.memories, 1);
+        assert_eq!(stats.exports.globals, 1);
+        assert_eq!(stats.exports.tables, 1);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_custom_sections() -> Result<()> {
+        let wat = r#"
+        (module )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+        // TODO: test custom section stats
+        let custom_sections: Vec<String> = Vec::new();
+        assert_eq!(stats.custom_sections, custom_sections);
+        Ok(())
+    }
+
+    #[test]
+    fn get_stats_has_start() -> Result<()> {
+        let wat = r#"
+        (module )
+        "#;
+        let stats = convert_wat_to_stats(wat)?;
+        // TODO: test start stat
+        assert_eq!(stats.has_start, false);
         Ok(())
     }
 }
